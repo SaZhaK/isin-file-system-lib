@@ -1,2 +1,3 @@
 # Project exclude paths
 /spring-boot-starter-isin-file-system/target/
+/spring-boot-starter-isin-file-system/spring-boot-starter-isin-file-system.iml
