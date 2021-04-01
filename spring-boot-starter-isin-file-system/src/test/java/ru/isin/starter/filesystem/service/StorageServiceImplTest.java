@@ -7,8 +7,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ru.isin.starter.filesystem.domain.FileDTO;
-import ru.isin.starter.filesystem.util.FileUtils;
-import ru.isin.starter.filesystem.util.HashUtils;
+import ru.isin.starter.filesystem.properties.HashProperties;
+import ru.isin.starter.filesystem.properties.StorageProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,12 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Тестирование работы {@link FileService}.
+ * Тестирование работы {@link StorageServiceImpl}.
  *
  * @author Alexander Kolomiets (31.03.2021)
  */
 @ActiveProfiles("dev")
-class FileServiceTest {
+class StorageServiceImplTest {
 	private static final String NAME = "Test.txt";
 	private static final String ORIGINAL_NAME = "OriginalTest.txt";
 	private static final String CONTENT_TYPE = "text";
@@ -40,32 +40,45 @@ class FileServiceTest {
 	private static final int MIN_FILE_NAME_LENGTH = 3;
 
 	/**
-	 * Инициализация тестового экзмеляра {@link HashUtils}.
+	 * Инициализация тестового экзмеляра {@link StorageProperties}.
 	 *
 	 * @return сущность для тестов
 	 */
-	private HashUtils initHashUtils() {
-		return new HashUtils();
+	private StorageProperties initStorageProperties() {
+		return new StorageProperties(
+				ROOT_DIRECTORY,
+				DIRECTORY_NESTING_LEVEL,
+				DIRECTORY_NAME_LENGTH,
+				MIN_FILE_NAME_LENGTH);
 	}
 
 	/**
-	 * Инициализация тестового экзмеляра {@link FileUtils}.
+	 * Инициализация тестового экзмеляра {@link HashProperties}.
 	 *
 	 * @return сущность для тестов
 	 */
-	private FileUtils initFileUtils() {
-		return new FileUtils();
+	private HashProperties initHashingProperties() {
+		return new HashProperties(HASHING_ALGORITHM);
 	}
 
 	/**
-	 * Инициализация тестового экзмеляра {@link FileService}.
+	 * Инициализация тестового экзмеляра {@link HashServiceImpl}.
 	 *
 	 * @return сущность для тестов
 	 */
-	private FileService initFileService() {
-		return new FileService(
-				initFileUtils(),
-				initHashUtils());
+	private HashServiceImpl initHashUtils() {
+		return new HashServiceImpl(initHashingProperties());
+	}
+
+	/**
+	 * Инициализация тестового экзмеляра {@link StorageServiceImpl}.
+	 *
+	 * @return сущность для тестов
+	 */
+	private StorageServiceImpl initFileService() {
+		return new StorageServiceImpl(
+				initHashUtils(),
+				initStorageProperties());
 	}
 
 	/**
@@ -82,21 +95,6 @@ class FileServiceTest {
 	}
 
 	/**
-	 * Инициализация тестового экзмеляра {@link FileSavingSettings}.
-	 *
-	 * @return сущность для тестов
-	 */
-	private FileSavingSettings initFileSavingSettings() {
-		return FileSavingSettings.builder().
-				rootDirectory(ROOT_DIRECTORY).
-				hashingAlgorithm(HASHING_ALGORITHM).
-				directoryNestingLevel(DIRECTORY_NESTING_LEVEL).
-				directoryNameLength(DIRECTORY_NAME_LENGTH).
-				minFileNameLength(MIN_FILE_NAME_LENGTH).
-				build();
-	}
-
-	/**
 	 * Удаление созданных директорий и файлов.
 	 */
 	@AfterAll
@@ -105,29 +103,27 @@ class FileServiceTest {
 	}
 
 	/**
-	 * Тестирование метода {@link FileService#saveFile(MultipartFile, FileSavingSettings)}.
+	 * Тестирование метода {@link StorageServiceImpl#save(MultipartFile)}.
 	 */
 	@Test
 	public void testSaveFile() throws IOException, NoSuchAlgorithmException {
 		MultipartFile multipartFile = initMultipartFile();
-		FileSavingSettings settings = initFileSavingSettings();
-		HashUtils hashUtils = initHashUtils();
-		FileUtils fileUtils = initFileUtils();
-		FileService fileService = initFileService();
+		HashServiceImpl hashServiceImpl = initHashUtils();
+		StorageServiceImpl storageServiceImpl = initFileService();
 
-		FileDTO fileDTO = fileService.saveFile(multipartFile, settings);
+		FileDTO fileDTO = storageServiceImpl.save(multipartFile);
 		assertTrue(Files.exists(Paths.get(ROOT_DIRECTORY)));
 
-		String hash = Base64.getEncoder().encodeToString(hashUtils.hash(ORIGINAL_NAME, HASHING_ALGORITHM));
+		String hash = Base64.getEncoder().encodeToString(hashServiceImpl.hash(ORIGINAL_NAME));
 		String directories = hash.substring(0, DIRECTORY_NESTING_LEVEL * DIRECTORY_NAME_LENGTH);
-		String path = fileUtils.createPath(directories, DIRECTORY_NAME_LENGTH);
+		Path path = createPath(directories);
 
 		checkDirectories(path);
 
 		assertEquals(ORIGINAL_NAME, fileDTO.getName());
-		assertEquals(ROOT_DIRECTORY + File.separator +
-				path + File.separator +
-				hash.substring(DIRECTORY_NESTING_LEVEL * DIRECTORY_NAME_LENGTH), fileDTO.getPath());
+		assertEquals(Path.of(ROOT_DIRECTORY).
+				resolve(path).
+				resolve(hash.substring(DIRECTORY_NESTING_LEVEL * DIRECTORY_NAME_LENGTH)), fileDTO.getPath());
 		assertEquals(CONTENT_TYPE, fileDTO.getContentType());
 		assertEquals(CONTENT.length, fileDTO.getSize());
 	}
@@ -135,18 +131,22 @@ class FileServiceTest {
 	/**
 	 * Проверка наличия директорий согласно указанной иерархии.
 	 */
-	private void checkDirectories(String path) {
-		int startIdx = 0;
-		StringBuilder folderName = new StringBuilder(ROOT_DIRECTORY);
-		while (startIdx < path.length()) {
-			int endIdx = path.indexOf(File.separator, startIdx + 1);
-			if (endIdx == -1) {
-				endIdx = path.length();
-			}
-			folderName.append(path, startIdx, endIdx);
-			startIdx = endIdx;
-
-			assertTrue(Files.exists(Paths.get(folderName.toString())));
+	private void checkDirectories(Path path) {
+		Path total = Paths.get(ROOT_DIRECTORY);
+		for (Path curPath : path) {
+			total = total.resolve(curPath);
+			assertTrue(Files.exists(total));
 		}
+	}
+
+	/**
+	 * Создание пути из строки.
+	 */
+	private Path createPath(String source) {
+		StringBuilder resultPath = new StringBuilder(source);
+		for (int i = DIRECTORY_NAME_LENGTH; i < resultPath.length(); i += DIRECTORY_NAME_LENGTH + 1) {
+			resultPath.insert(i, File.separator);
+		}
+		return Paths.get(resultPath.toString());
 	}
 }

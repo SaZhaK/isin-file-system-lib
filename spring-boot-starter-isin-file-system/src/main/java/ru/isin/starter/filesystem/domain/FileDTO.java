@@ -2,6 +2,8 @@ package ru.isin.starter.filesystem.domain;
 
 import lombok.*;
 
+import java.nio.file.Path;
+
 /**
  * ДТО для представления данных о сохранённом файле.
  *
@@ -23,7 +25,7 @@ public class FileDTO {
 	 * Путь к файлу в файловой системе.
 	 */
 	@NonNull
-	private String path;
+	private Path path;
 
 	/**
 	 * Тип файла.
