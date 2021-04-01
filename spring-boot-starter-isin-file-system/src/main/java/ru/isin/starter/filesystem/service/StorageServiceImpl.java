@@ -21,7 +21,7 @@ import java.util.Base64;
 import java.util.Objects;
 
 /**
- * Сервис для сохранения файлов.
+ * Реализация интерфейса {@link StorageService}.
  *
  * @author Kolomiets Alexander (30.03.2021)
  * @since 1.0.0
