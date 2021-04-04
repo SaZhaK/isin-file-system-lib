@@ -5,7 +5,7 @@
 ### Актуальные версии
 
 - **В maven репозитории:**
-- **В github репозитории:**
+- **В github репозитории: 1.0.0**
 
 ### Стек
 
@@ -17,11 +17,8 @@
 
 ### Работа с библиотекой
 
-Для сохранения файлов требуется внедрить *FileService*. <br>
-Методы *save(MultipartFile file, FileSavingSettings settings)*, 
-*save(Path file)* и *save(File file)* позволяют сохранить файл. <br>
-Метод *save(InputStream data, String fileName, String contentType)* позволяет
-сохранить произвольный набор байт в качестве нового файла
+Для сохранения файлов требуется внедрить *StorageService*. <br>
+*StorageService* поддерживает CRUD операции над файлами.
 
 После подключения библиотеки можно указать пользовательские параметры сохранения
 в файле application.yml. <br>
@@ -42,21 +39,25 @@ public class FileStorage {
     @Autowired
     private final StorageService storageService;
     
+    // Сохранение файла
     public void save(MultipartFile file) {
-        storageService.saveFile(file);
+        FileDTO fileDTO = storageService.save(file);
     }
 
-    public void save(File file) {
-        storageService.saveFile(file);
+    // Чтение содержимого файла
+    public void read(Path file) {
+        byte[] content = storageService.read(file);
+    }
+
+    // Обновление содержимого файла
+    public void update(Path path, MultipartFile file) {
+        FileDTO fileDTO = storageService.update(path, file);
     }
     
-    public void save(Path file) {
-        storageService.saveFile(file);
+    // Удаление файла
+    public void delete(Path path) {
+    	storageService.delete(path);
     }
-    
-    public void save(InputStream data, String fileName, String contentType) {
-            storageService.saveFile(data, fileName, contentType);
-        }
 }
 ```
 

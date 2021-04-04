@@ -104,8 +104,8 @@ public class StorageServiceImpl implements StorageService {
 	 * {@inheritDoc}.
 	 */
 	@Override
-	public byte[] read(Path path) throws IOException {
-		FileInputStream fileInputStream = new FileInputStream(getActualPath(path).toFile());
+	public byte[] read(Path fileName) throws IOException {
+		FileInputStream fileInputStream = new FileInputStream(getActualPath(fileName).toFile());
 		return fileInputStream.readAllBytes();
 	}
 
@@ -113,13 +113,13 @@ public class StorageServiceImpl implements StorageService {
 	 * {@inheritDoc}.
 	 */
 	@Override
-	public FileDTO update(Path path, Path file) throws IOException {
-		Path actualSystemPath = getActualPath(path);
+	public FileDTO update(Path fileName, Path file) throws IOException {
+		Path actualSystemPath = getActualPath(fileName);
 		checkBeforeUpdate(actualSystemPath);
 		Files.delete(actualSystemPath);
 
 		FileInfo fileInfo = FileInfo.builder().
-				name(path.toString()).
+				name(fileName.toString()).
 				contentType(Files.probeContentType(file)).
 				size(Files.size(file)).
 				content(Files.readAllBytes(file)).
@@ -131,13 +131,13 @@ public class StorageServiceImpl implements StorageService {
 	 * {@inheritDoc}.
 	 */
 	@Override
-	public FileDTO update(Path path, File file) throws IOException {
-		Path actualSystemPath = getActualPath(path);
+	public FileDTO update(Path fileName, File file) throws IOException {
+		Path actualSystemPath = getActualPath(fileName);
 		checkBeforeUpdate(actualSystemPath);
 		Files.delete(actualSystemPath);
 
 		FileInfo fileInfo = FileInfo.builder().
-				name(path.toString()).
+				name(fileName.toString()).
 				contentType(Files.probeContentType(file.toPath())).
 				size(Files.size(file.toPath())).
 				content(Files.readAllBytes(file.toPath())).
@@ -149,13 +149,13 @@ public class StorageServiceImpl implements StorageService {
 	 * {@inheritDoc}.
 	 */
 	@Override
-	public FileDTO update(Path path, MultipartFile file) throws IOException {
-		Path actualSystemPath = getActualPath(path);
+	public FileDTO update(Path fileName, MultipartFile file) throws IOException {
+		Path actualSystemPath = getActualPath(fileName);
 		checkBeforeUpdate(actualSystemPath);
 		Files.delete(actualSystemPath);
 
 		FileInfo fileInfo = FileInfo.builder().
-				name(path.toString()).
+				name(fileName.toString()).
 				contentType(file.getContentType()).
 				size(file.getSize()).
 				content(file.getBytes()).
@@ -167,8 +167,8 @@ public class StorageServiceImpl implements StorageService {
 	 * {@inheritDoc}.
 	 */
 	@Override
-	public void delete(Path path) throws IOException {
-		Path actualSystemPath = getActualPath(path);
+	public void delete(Path fileName) throws IOException {
+		Path actualSystemPath = getActualPath(fileName);
 		Files.delete(actualSystemPath);
 		clearSubtree(actualSystemPath.getParent());
 	}
@@ -177,8 +177,8 @@ public class StorageServiceImpl implements StorageService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Path getActualPath(Path path) {
-		String hash = countHash(path.getFileName().toString());
+	public Path getActualPath(Path fileName) {
+		String hash = countHash(fileName.getFileName().toString());
 		return storageProperties.getRootDirectory().
 				resolve(getDirectoriesPath(hash)).
 				resolve(hash.substring(countDirectoriesPartLength()));
@@ -203,13 +203,13 @@ public class StorageServiceImpl implements StorageService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void clearSubtree(Path path) throws IOException {
-		while (Files.exists(path) &&
-				path.toFile().listFiles() != null &&
-				path.toFile().listFiles().length == 0 &&
-				!path.equals(storageProperties.getRootDirectory())) {
-			Files.delete(path);
-			clearSubtree(path.getParent());
+	public void clearSubtree(Path startFile) throws IOException {
+		while (Files.exists(startFile) &&
+				startFile.toFile().listFiles() != null &&
+				startFile.toFile().listFiles().length == 0 &&
+				!startFile.equals(storageProperties.getRootDirectory())) {
+			Files.delete(startFile);
+			clearSubtree(startFile.getParent());
 		}
 	}
 

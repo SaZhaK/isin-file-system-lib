@@ -63,57 +63,57 @@ public interface StorageService {
 	/**
 	 * Метод для чтения содержимого напрямую из сохранённого файла.
 	 *
-	 * @param path исходное имя файла
+	 * @param fileName исходное имя файла
 	 * @return массив байт, представляющий содержимое сохранённого файла
 	 * @throws IOException в случае ошибки открытия файла
 	 */
-	byte[] read(Path path) throws IOException;
+	byte[] read(Path fileName) throws IOException;
 
 	/**
 	 * Метод для обновления сохранённого файла.
 	 *
-	 * @param path исходное имя файла
+	 * @param fileName исходное имя файла
 	 * @param file новый файл для сохранения
 	 * @return объект с информацией об изменённом файле
 	 * @throws IOException в случае ошибки открытия файла
 	 */
-	FileDTO update(Path path, Path file) throws IOException;
+	FileDTO update(Path fileName, Path file) throws IOException;
 
 	/**
 	 * Метод для обновления сохранённого файла.
 	 *
-	 * @param path исходное имя файла
+	 * @param fileName исходное имя файла
 	 * @param file новый файл для сохранения
 	 * @return объект с информацией об изменённом файле
 	 * @throws IOException в случае ошибки открытия файла
 	 */
-	FileDTO update(Path path, File file) throws IOException;
+	FileDTO update(Path fileName, File file) throws IOException;
 
 	/**
 	 * Метод для обновления сохранённого файла.
 	 *
-	 * @param path исходное имя файла
+	 * @param fileName исходное имя файла
 	 * @param file новый файл для сохранения
 	 * @return объект с информацией об изменённом файле
 	 * @throws IOException в случае ошибки открытия файла
 	 */
-	FileDTO update(Path path, MultipartFile file) throws IOException;
+	FileDTO update(Path fileName, MultipartFile file) throws IOException;
 
 	/**
 	 * Метод для удаления сохранённого файла и образовавшихся пустых директорий.
 	 *
-	 * @param path исходное имя файла
+	 * @param fileName исходное имя файла
 	 * @throws IOException в случае ошибки открытия файла
 	 */
-	void delete(Path path) throws IOException;
+	void delete(Path fileName) throws IOException;
 
 	/**
 	 * Метод для полуения имени файла, под которым он сохранён в системе.
 	 *
-	 * @param path исходное имя файла
+	 * @param fileName исходное имя файла
 	 * @return имя сохранённого файла в системе
 	 */
-	Path getActualPath(Path path);
+	Path getActualPath(Path fileName);
 
 	/**
 	 * Метод для удаления пустых директорий.
@@ -125,8 +125,8 @@ public interface StorageService {
 	/**
 	 * Метод для удаления пустых директорий вверх по иерархии, начиная с выбранного места.
 	 *
-	 * @param path файл, с которого будет начато удаление
+	 * @param startFile файл, с которого будет начато удаление
 	 * @throws IOException в случае ошибки открытия директории
 	 */
-	void clearSubtree(Path path) throws IOException;
+	void clearSubtree(Path startFile) throws IOException;
 }
