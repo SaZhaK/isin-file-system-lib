@@ -1,4 +1,4 @@
-# ISIN-file-system-lib.
+# ISIN-file-system-lib
 
 ## Библиотека для сохранения файлов в файловой системе 
 
@@ -23,11 +23,11 @@
 После подключения библиотеки можно указать пользовательские параметры сохранения
 в файле application.yml. <br>
 По умолчанию используются зачения:
-<br> isin.filesystem.hash.hashingAlgorithm = MD5
-<br> isin.filesystem.storage.rootDirectory = storage/files
-<br> isin.filesystem.storage.directoryNestingLevel = 3
-<br> isin.filesystem.storage.directoryNameLength = 2
-<br> isin.filesystem.storage.minFileNameLength = 5
+- isin.filesystem.hash.hashingAlgorithm = MD5
+- isin.filesystem.storage.rootDirectory = storage/files
+- isin.filesystem.storage.directoryNestingLevel = 3
+- isin.filesystem.storage.directoryNameLength = 2
+- isin.filesystem.storage.minFileNameLength = 5
 
 Пример использования:
 ```java
